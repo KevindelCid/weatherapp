@@ -7,6 +7,26 @@ import loader from "../assets/loader2.gif";
 const Weather = () => {
   const [geolocation, setGeolocation] = useState({});
   const [loadVisible, setLoadVisible] = useState(false);
+  const [ degreesT, setDegreesT] = useState('C')
+  const [ degrees, setDegrees] = useState(0)
+  const [background, setBackground] = useState('nodata')
+
+
+const backgrounds = [
+  {
+    name: 'Clouds',
+    url: "https://i.postimg.cc/x88mqjws/Clouds.jpg"
+  },
+  {
+    name: 'Rain',
+    url: "https://i.postimg.cc/Y0pJPJQ1/rain.jpg"
+  },
+  {
+    name: 'Clear',
+    url: "https://i.postimg.cc/sxXT7yp0/Clear-Sky.jpg"
+  }
+]
+
 
   moment.updateLocale("en", {
     months: [
@@ -35,6 +55,18 @@ const Weather = () => {
       "Sábado",
     ],
   });
+  const changeFC=()=>{
+    if(degreesT === 'C') {
+
+      setDegreesT('F')
+      setDegrees(Math.round(degrees*1.8+32))
+    }
+    else{
+
+      setDegreesT('C')
+      setDegrees(Math.round(((degrees - 32)*5)/9))
+    }
+  }
 
   const getGeolocation = () => {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -55,6 +87,10 @@ const Weather = () => {
   const getApi = (url) => {
     axios.get(url).then((res) => {
       setGeolocation(res.data);
+      setDegrees(Math.round(res.data.main.temp - 273.15))
+      backgrounds.map(item => {
+        if(item.name === res.data.weather?.[0].main)  setBackground(item.url)
+      })
       setLoadVisible(!loadVisible);
       console.log(res.data);
     });
@@ -78,29 +114,39 @@ const Weather = () => {
         <div className="weather">
           <img
             className="background-weather"
-            src="https://i.postimg.cc/y8jmrKXx/sun.jpg"
+            src={background}
           ></img>
           {/* <div className="weather-search-locality">holis</div> */}
           <div className="weather-container">
-            <div className="weather-container-data"></div>
+            <div className="weather-container-data">
+              
+            </div>
 
             <div className="weather-container-view">
-              <h2 className="title-weather">
+            <h2 className="title-weather">
                 {geolocation.name}, {geolocation.sys?.country}
               </h2>
+              <h2 className="temp">  {degrees} °{degreesT}</h2>
+            <img className="icon-weather" src={`http://openweathermap.org/img/wn/${geolocation.weather?.[0].icon}@2x.png`} />
+       
               <div className="temp-weather-container">
-                <h2>{(geolocation.main?.temp - 273.15).toFixed(2)}°</h2>
+                
                 <h3>
                   <i className="fa-solid fa-temperature-three-quarters"> </i>{" "}
-                  MAX: {(geolocation.main?.temp_max - 273.15).toFixed(2)} °C
+                  MAX: { degreesT === 'C' ?  Math.round((geolocation.main?.temp_max- 273.15)) : Math.round((geolocation.main?.temp_max- 273.15) * 9/5 + 32)} °{degreesT}
                 </h3>
                 <h3>
                   <i className="fa-solid fa-temperature-three-quarters"> </i>{" "}
-                  MIN: {(geolocation.main?.temp_min - 273.15).toFixed(2)} °C
+                  MIN: { degreesT === 'C' ?  Math.round((geolocation.main?.temp_min- 273.15)) : Math.round((geolocation.main?.temp_min- 273.15) * 9/5 + 32)} °{degreesT}
+                  
+                  
                 </h3>
+               <h3><i className="fa-solid fa-wind"></i> Viento: {geolocation.wind?.speed} m/s</h3>  
+               <h3><i className="fa-solid fa-droplet"></i> Humedad: {geolocation.main?.humidity}%</h3>  
                 {moment().format("ddd, D [de] MMMM [de] YYYY LT")}
               </div>
             </div>
+            <button onClick={changeFC} className="btn-fc" type="button">{degreesT === 'C' ? "Cambiar a °F" : "Cambiar a °C" }</button>
           </div>
         </div>
       </div>
