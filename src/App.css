@@ -89,7 +89,7 @@ body {
   justify-content: flex-start;
 
   flex-grow: 2;
-  overflow: scroll;
+  overflow: auto;
 }
 
 .weather-container-view {
